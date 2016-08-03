@@ -1,6 +1,6 @@
 
 
-Twitch.init({clientId: 'hmvcicn5vkav07m97a9tg0cifrblbce'}, function(error, status) {
+Twitch.init({clientId: 'ci2tc032wxaprwrcpz7qaqi8u70n7t8'}, function(error, status) {
 // the sdk is now loaded
 	if (status.authenticated) {
 	  	// Already logged in, hide button
