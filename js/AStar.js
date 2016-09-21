@@ -62,43 +62,60 @@ function GetUIDObj(ID){
 		jobj.append("<div id=\""+obj.GUID+"\" class=\"SQUARE\"></div>");
 	}
 
-	obj.GetfCost = function (Start,End,Current) {
+
+	obj.GetfCost = function (Start,End,Cur,gcost) {
 		
-		var csx = obj.X - Start.X
-		var cys = obj.Y - Start.Y;
+		// var csx = obj.X - Start.X
+		// var cys = obj.Y - Start.Y;
 		var cxe = obj.X - End.X;
 		var cye = obj.Y - End.Y;
 
-		// var add = 0;
-		// if(csx > cys){
-		// 	add += csx - cys;
-		// 	add += cys * 1.4;
-		// }
-		// else{
-		// 	add += cys - csx;
-		// 	add += csx * 1.4;
-		// }
+		if(!Cur.fCost)
+			Cur.fCost = 0;
+		if(!gcost)
+			gcost = 0;
+		if(!Cur.cul_gCost)
+			Cur.cul_gCost = 0;
 
-		// if(cxe > cye){
-		// 	add += cxe - cye;
-		// 	add += cye * 1.4;
-		// }
-		// else{
-		// 	add += cye - cxe;
-		// 	add += cxe * 1.4;
-		// }
+		//Math.sqrt( (csx*csx) + (cys*cys) ) 
+		obj.gCost = gcost;
+		obj.cul_gCost = gcost + Cur.cul_gCost;
+		obj.hCost = Math.floor(Math.sqrt( (cxe*cxe) + (cye*cye) )) * 10;
 
-		if(!Current.fCost)
-			Current.fCost = 0;
-		// obj.fCost = csx + cys + cxe + cye + Current.fCost + add;
-
-		obj.fCost = Math.floor(Math.sqrt( (csx*csx) + (cys*cys) ) 
-			+ Math.sqrt( (cxe*cxe) + (cye*cye) ) * 100) ;
-			//+ Current.fCost); 
+		obj.fCost = obj.cul_gCost + obj.hCost;//  * 10 + gcost);
 
 		obj.JOBJ().empty();
-		obj.JOBJ().append("<span style=\"color:white;font-size: 3px;\">"+obj.fCost+"</span>");
+		obj.JOBJ().append("<span style=\"color:white;font-size: 40%;\">"+obj.cul_gCost+"</span>");
+		obj.JOBJ().append("<br/><span style=\"color:white;font-size: 40%;\">"+obj.hCost+"</span>");
+	}
 
+	obj.SaveCosts = function (argument) {
+		obj._gCost = obj.gCost;
+		obj._hCost = obj.hCost;
+		obj._cul_gCost = obj.cul_gCost;
+		obj._fCost = obj.fCost;
+	}
+	obj.RevertCosts = function (argument) {
+		obj.gCost = obj._gCost;
+		obj.hCost = obj._hCost;
+		obj.cul_gCost = obj._cul_gCost;
+		obj.fCost = obj._fCost;
+
+		obj.JOBJ().empty();
+		obj.JOBJ().append("<span style=\"color:white;font-size: 40%;\">"+obj.cul_gCost+"</span>");
+		obj.JOBJ().append("<br/><span style=\"color:white;font-size: 40%;\">"+obj.hCost+"</span>");
+	}
+
+	obj.SetfCost = function (f,End){
+
+		var cxe = obj.X - End.X;
+		var cye = obj.Y - End.Y;
+		var distanceFromEnd = Math.floor(Math.sqrt( (cxe*cxe) + (cye*cye) ));
+
+		obj.fCost = f;
+		obj.JOBJ().empty();
+		obj.JOBJ().append("<span style=\"color:white;font-size: 10px;\">"+obj.fCost+"</span>");		
+		obj.JOBJ().append("<br/><span style=\"color:white;font-size: 10px;\">"+distanceFromEnd+"</span>");
 	}
 
 
@@ -133,8 +150,8 @@ function GetUIDObj(ID){
 	return obj;
 }
 
-var width = 50;
-var height = 50;
+var width = 100;
+var height = 100;
 
 function GenerateGrid(){
 
@@ -237,18 +254,25 @@ function AStarStep () {
 				continue;
 			}
 
+			var gcost = 0;
+			if(i == 0 || j == 0){
+				gcost = 10;
+			}else{
+				gcost = 14;
+			}
+
 			if(grid[x][y].fCost){
-				var temp = grid[x][y].fCost;
-				grid[x][y].GetfCost(Start,End,Current);
+				grid[x][y].SaveCosts();
+				grid[x][y].GetfCost(Start,End,Current,gcost);
 
 				var lowerfCost = false;
-				if(grid[x][y].fCost < temp){
+				if(grid[x][y].fCost < grid[x][y]._fCost){
 					lowerfCost = true;
 				}else{
-					grid[x][y].fCost = temp;
+					grid[x][y].RevertCosts();
 				}
 			}else{
-				grid[x][y].GetfCost(Start,End,Current);
+				grid[x][y].GetfCost(Start,End,Current,gcost);
 			}
 
 			if(!grid[x][y].Open() || lowerfCost){
@@ -262,10 +286,10 @@ function AStarStep () {
 		}
 	}
 
-	setTimeout(AStarStep,100);	
+	setTimeout(AStarStep,0);	
 }
 
-setTimeout(AStarStep,1);
+setTimeout(AStarStep,1000);
 
 
 $(document).ready(function(){
@@ -280,6 +304,7 @@ $(document).ready(function(){
   });
 
   $(".SQUARE").mouseover(function(){
+
     if(isDown) {   
 
     	var obj = GetUIDObj($(this).attr("id"));
