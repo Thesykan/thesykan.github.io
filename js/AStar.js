@@ -133,8 +133,8 @@ function GetUIDObj(ID){
 	return obj;
 }
 
-var width = 100;
-var height = 100;
+var width = 50;
+var height = 50;
 
 function GenerateGrid(){
 
@@ -267,6 +267,30 @@ function AStarStep () {
 
 setTimeout(AStarStep,1);
 
+
+$(document).ready(function(){
+
+  var isDown = false;   // Tracks status of mouse button
+
+  $(document).mousedown(function() {
+    isDown = true;      // When mouse goes down, set isDown to true
+  })
+  .mouseup(function() {
+    isDown = false;    // When mouse goes up, set isDown to false
+  });
+
+  $(".SQUARE").mouseover(function(){
+    if(isDown) {   
+
+    	var obj = GetUIDObj($(this).attr("id"));
+    	obj.AddClass("BLACKSQUARE");
+    	obj.blocked = true;
+
+       // Only change css if mouse is down
+       //$(this).css({background:"#333333"});
+    }
+  });
+});
 
 
 
