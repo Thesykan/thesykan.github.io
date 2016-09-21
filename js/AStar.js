@@ -62,28 +62,42 @@ function GetUIDObj(ID){
 		jobj.append("<div id=\""+obj.GUID+"\" class=\"SQUARE\"></div>");
 	}
 
-	obj.GetfCost = function (Start,End) {
+	obj.GetfCost = function (Start,End,Current) {
 		
-		var csx = Math.abs(Current.X - Start.X);
-		var cys = Math.abs(Current.Y - Start.Y);
-		var cxe = Math.abs(Current.X - End.X);
-		var cye = Math.abs(Current.Y - End.Y);
+		var csx = obj.X - Start.X
+		var cys = obj.Y - Start.Y;
+		var cxe = obj.X - End.X;
+		var cye = obj.Y - End.Y;
 
-		// Math.sqrt(csx * csx) + Math.sqrt(cys * cys)
-		//	+ Math.sqrt(cxe * cxe) + Math.sqrt(cye * cye)
+		// var add = 0;
+		// if(csx > cys){
+		// 	add += csx - cys;
+		// 	add += cys * 1.4;
+		// }
+		// else{
+		// 	add += cys - csx;
+		// 	add += csx * 1.4;
+		// }
 
-		var add = 0;
-		if(csx > cys)
-			add += csx - cys;
-		else
-			add += cys - csx;
+		// if(cxe > cye){
+		// 	add += cxe - cye;
+		// 	add += cye * 1.4;
+		// }
+		// else{
+		// 	add += cye - cxe;
+		// 	add += cxe * 1.4;
+		// }
 
-		if(cxe > cye)
-			add = cxe - cye;
-		else
-			add = cye - cxe;
+		if(!Current.fCost)
+			Current.fCost = 0;
+		// obj.fCost = csx + cys + cxe + cye + Current.fCost + add;
 
-		obj.fCost = csx + cys + cxe + cye;
+		obj.fCost = Math.floor(Math.sqrt( (csx*csx) + (cys*cys) ) 
+			+ Math.sqrt( (cxe*cxe) + (cye*cye) ) * 100) ;
+			//+ Current.fCost); 
+
+		obj.JOBJ().empty();
+		obj.JOBJ().append("<span style=\"color:white;font-size: 3px;\">"+obj.fCost+"</span>");
 
 	}
 
@@ -223,8 +237,22 @@ function AStarStep () {
 				continue;
 			}
 
-			if(!grid[x][y].Open() || grid[x][y].lowerfCost){
-				grid[x][y].GetfCost(Start,End);
+			if(grid[x][y].fCost){
+				var temp = grid[x][y].fCost;
+				grid[x][y].GetfCost(Start,End,Current);
+
+				var lowerfCost = false;
+				if(grid[x][y].fCost < temp){
+					lowerfCost = true;
+				}else{
+					grid[x][y].fCost = temp;
+				}
+			}else{
+				grid[x][y].GetfCost(Start,End,Current);
+			}
+
+			if(!grid[x][y].Open() || lowerfCost){
+				
 				grid[x][y].SetParent(Current);
 
 				if(!grid[x][y].Open()){
@@ -234,7 +262,7 @@ function AStarStep () {
 		}
 	}
 
-	setTimeout(AStarStep,1);	
+	setTimeout(AStarStep,100);	
 }
 
 setTimeout(AStarStep,1);
